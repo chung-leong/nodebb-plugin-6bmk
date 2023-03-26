@@ -1,0 +1,75 @@
+html, body {
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  height: 100vh;
+  width: 100vw;
+  background-color: #c19a6b;
+}
+
+#page-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+#typewriter {
+  width: 600px;
+  filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.30));
+  font-family: Courier New, Liberation Mono, monospace;
+}
+
+#typewriter #paper-container {
+  position: relative;
+  overflow: visible;
+  height: 80px;
+}
+
+#typewriter #input {
+  position: absolute;
+  font-size: 18px;
+  left: 0;
+  padding: 8px 8px 8px 8px;
+  border: 0;
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+  white-space: pre-wrap;
+}
+
+#typewriter svg {
+  overflow: visible;
+}
+
+#typewriter.animating svg #roller {
+  transition: transform 100ms linear;
+}
+
+#typewriter.animating #input {
+  caret-color: transparent;
+}
+
+#typewrite.animating svg .key {
+  transition: transform 100ms linear;
+}
+
+@media (max-width: 640px) {
+  #typewriter {
+    width: 400px;
+  }
+
+  #typewriter #input {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 375px) {
+  #typewriter {
+    width: 300px;
+  }
+}

@@ -1,0 +1,2 @@
+#!/bin/bash
+svgo --config typewriter.config.cjs --input typewriter.svg --output typewriter.min.svg
