@@ -1,6 +1,6 @@
 {
-	"id": "nodebb-plugin-quickstart",
-	"url": "https://github.com/NodeBB/nodebb-plugin-quickstart",
+	"id": "nodebb-plugin-6bmk",
+	"url": "https://github.com/chung-leong/nodebb-plugin-6bmk",
 	"library": "./library.js",
 	"hooks": [
 		{ "hook": "static:app.load", "method": "init" },
@@ -11,7 +11,7 @@
 		"static": "./static"
 	},
 	"scss": [
-		"static/scss/quickstart.scss"
+		"static/scss/6bmk.scss"
 	],
 	"scripts": [
 		"static/lib/main.js"
@@ -20,8 +20,8 @@
 		"static/lib/acp-main.js"
 	],
 	"modules": {
-		"../client/quickstart.js": "./static/lib/quickstart.js",
-		"../admin/plugins/quickstart.js": "./static/lib/admin.js"
+		"../client/6bmk.js": "./static/lib/6bmk.js",
+		"../admin/plugins/6bmk.js": "./static/lib/admin.js"
 	},
 	"templates": "static/templates"
 }
