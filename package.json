@@ -41,5 +41,8 @@
     "eslint-plugin-import": "2.27.5",
     "husky": "8.0.3",
     "lint-staged": "13.2.0"
+  },
+  "dependencies": {
+    "6bmk": "^0.0.8"
   }
 }

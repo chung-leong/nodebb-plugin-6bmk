@@ -1,8 +1,17 @@
 'use strict';
 
+const { nextTick } = require('process');
+const url = require('url');
 const meta = require.main.require('./src/meta');
 const controllers = require('./lib/controllers');
+const controllerHelpers = require.main.require('./src/controllers/helpers');
 const routeHelpers = require.main.require('./src/routes/helpers');
+const {
+	createFlyer,
+	getFlyers,
+	getFlyerStream,
+	findHaiku,
+} = require('./lib/helpers');
 
 const plugin = {};
 
@@ -11,16 +20,36 @@ plugin.init = async ({ router }) => {
 	const { setting1, setting2 } = await meta.settings.get('6bmk');
 
 	router.use((req, res, next) => {
-		if (!req.url.startsWith('/assets/')) {
-			if (!req.user) {
-				if (req.url.startsWith('/api/')) {
-					req.url = '/api/6bmk';
+		try {
+			const parsedUrl = url.parse(req.url, true);
+			const { pathname } = parsedUrl;
+			const routes = n => [ n, `/api${n}` ];
+			const match = n => pathname === n || pathname.startsWith(`${n}/`);
+			const ignoring = [ '/assets', '/admin', ...routes('/login'), ...routes('/reset') ];
+			if (!ignoring.some(match)) {
+				let allowing = false;
+				if (req.user) {
+					allowing = true;
 				} else {
-					req.url = '/6bmk';
+					if (routes('/register').some(match)) {
+						const { validatedHaikuId } = req.session;
+						if (validatedHaikuId) {
+							allowing = true;
+						}
+					}
+				}
+				if (!allowing) {
+					if (match('/api')) {
+						req.url = '/api/6bmk';
+					} else {
+						req.url = '/6bmk';
+					}	
 				}
 			}	
+			next();
+		} catch (err) {
+			next(err);
 		}
-		next();
 	});
 	routeHelpers.setupPageRoute(router, '/6bmk', [], (req, res) => {
 		res.render('6bmk', { uid: req.uid });
@@ -28,23 +57,34 @@ plugin.init = async ({ router }) => {
 	routeHelpers.setupAdminPageRoute(router, '/admin/plugins/6bmk', [], controllers.renderAdminPage);
 };
 
-plugin.addRoutes = async ({ router, middleware, helpers }) => {
-	const middlewares = [
-		middleware.ensureLoggedIn,			// use this if you want only registered users to call this route
-		middleware.admin.checkPrivileges,	// use this to restrict the route to administrators
-	];
-
-	routeHelpers.setupApiRoute(router, 'get', '/6bmk/flyers/pptx/:id', middlewares, (req, res) => {
-		const { id } = req.params;
-		res.json({ id });
+plugin.addRoutes = async ({ router, middleware }) => {
+	routeHelpers.setupApiRoute(router, 'post', '/6bmk/validate', [], (req, res, next) => {
+		(async () => {
+			const { text } = req.body;
+			const haiku = await findHaiku(text);
+			const found = !haiku;
+			if (haiku) {
+				req.session.validatedHaikuId = haiku.hid;
+			}
+			controllerHelpers.formatApiResponse(found ? 200 : 404, res, { found });
+		})();
 	});
-};
 
-plugin.redirect = async ({ req, res }) => {
-	if (!req.user) {
-		req.url = '/6bmk';
-	}
-	console.log(res);
+	const middlewares = [
+		middleware.ensureLoggedIn,
+		middleware.admin.checkPrivileges,
+	];
+	routeHelpers.setupApiRoute(router, 'get', '/6bmk/flyers/pptx/:id', middlewares, (req, res) => {
+		(async () => {
+			const { id } = req.params;
+			const stream = await getFlyerStream(id);
+			res.set({ 
+				'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+				'Content-Disposition': `attachment; filename="${stream.name}.pptx"`,
+			});
+			stream.pipe(res);	
+		})();
+	});
 };
 
 plugin.addAdminNavigation = (header) => {

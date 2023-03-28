@@ -13,12 +13,6 @@
 	"less": [
 		"static/less/6bmk.less"
 	],
-	"scripts": [
-		"static/lib/main.js"
-	],
-	"acpScripts": [
-		"static/lib/acp-main.js"
-	],
 	"modules": {
 		"../client/6bmk.js": "./static/lib/6bmk.js",
 		"../admin/plugins/6bmk.js": "./static/lib/admin.js"
