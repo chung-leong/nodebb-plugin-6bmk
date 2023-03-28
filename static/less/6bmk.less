@@ -1,0 +1,76 @@
+@small:   ~"only screen and (max-width: 640px)";
+@smaller:  ~"only screen and (max-width: 375px)";
+
+body.page-6bmk {
+  #header-menu, #footer {
+    display: none;
+  }
+
+  #screen {
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #c19a6b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; 
+  }
+  
+  #typewriter {
+    width: 600px;
+    filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.30));
+    font-family: Courier New, Liberation Mono, monospace;
+
+    #paper-container {
+      position: relative;
+      overflow: visible;
+      height: 80px;
+    }
+
+    #input {
+      position: absolute;
+      font-size: 18px;
+      left: 0;
+      padding: 8px 8px 8px 8px;
+      border: 0;
+      outline: none;
+      resize: none;
+      box-sizing: border-box;
+      white-space: pre-wrap;
+
+      @media @small {
+        font-size: 12px;
+      }
+    }
+
+    svg {
+      overflow: visible;
+    }
+
+    &.animating  {
+      svg {
+        #roller {
+          transition: transform 100ms linear;
+        }
+        .key {
+          transition: transform 100ms linear;
+        }
+      }
+
+      #input {
+        caret-color: transparent;
+      }
+    }
+
+    @media @small {
+      width: 400px;
+    }
+
+    @media @smaller {
+      width: 300px;
+    }
+  }
+}
