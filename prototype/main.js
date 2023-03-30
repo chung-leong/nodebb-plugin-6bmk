@@ -46,7 +46,8 @@
     // reposition paper, animate only when jumping between lines
     const inputRect = input.getBoundingClientRect();
     const paperYOffset = inputRect.top + rangeYOffset - paperRect.top;
-    const animating = animate ? paperYOffset !== 0 : false;
+    const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
+    const animating = animate && isChrome ? paperYOffset !== 0 : false;
     typewriter.classList.toggle('animating', animating);
     shiftSVGElement(paper, 0, paperYOffset);
     // reposition roller
@@ -61,7 +62,6 @@
       input.style.left = `${paperRect.left - rootRect.left}px`;
       input.style.top = `${paperRect.top - rootRect.top}px`;
       input.style.width = `${paperRect.width}px`;
-      input.style.height = `${paperRect.height}px`;
     };
     if (animating) {
       // update position as transition progresses
@@ -138,8 +138,18 @@
     }
   }
 
+  function handleBeforeInput(evt) {
+    if (evt.inputType?.startsWith('format')) {
+      evt.preventDefault();
+    }
+  }
+
   function handleInput(evt) {
     reposition();
+    const paperRect = paper.getBoundingClientRect();
+    if (evt.target.offsetHeight > paperRect.height) {
+      console.log('broken');
+    }
   }
 
   function handleSelectionChange(evt) {
@@ -179,11 +189,6 @@
   }
 
   function handleKeyDown(evt) {
-    if (evt.repeat) {
-      evt.preventDefault();
-      evt.stopPropagation();
-      return;
-    }
     const key = getKey(evt);
     if (key && !key.down) {
       key.down = true;
@@ -199,10 +204,19 @@
     }
   }
 
+  function handleTypewriterClick(evt) {
+    input.focus();
+  }
+
+  const observer = new ResizeObserver(() => reposition(false));
+  observer.observe(typewriter);
+
+  input.addEventListener('beforeinput', handleBeforeInput);
   input.addEventListener('input', handleInput);
   input.addEventListener('paste', handlePaste);
   input.addEventListener('drop', handleDrop);
   input.addEventListener('keydown', handleKeyDown);
+  svgContainer.addEventListener('click', handleTypewriterClick);
   document.addEventListener('keyup', handleKeyUp);
   document.addEventListener('selectionchange', handleSelectionChange);
   reposition(true);
