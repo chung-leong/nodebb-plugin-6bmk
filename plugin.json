@@ -2,6 +2,8 @@
 	"id": "nodebb-plugin-6bmk",
 	"url": "https://github.com/chung-leong/nodebb-plugin-6bmk",
 	"library": "./library.js",
+	"languages": "languages",
+	"defaultLang": "en",
 	"hooks": [
 		{ "hook": "static:app.load", "method": "init" },
 		{ "hook": "static:api.routes", "method": "addRoutes" },

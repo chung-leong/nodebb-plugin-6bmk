@@ -16,13 +16,53 @@ body.page-6bmk {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; 
   }
-  
+
+  #message-container {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+    z-index: 1;
+
+    .message {
+      border: 1px solid #000;
+      background-color: #fff;
+      padding: 1em 1em 1em 1em;
+      margin-bottom: 2em;
+      display: none;
+
+      &.active {
+        display: block;
+        transition: opacity 1s linear;
+      }
+
+      &.hidden {
+        opacity: 0;
+      }
+
+      &.button {
+        border-radius: 0.5em;
+        cursor: pointer;
+      }   
+    }
+  }
+
+  #error-container {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+
+    #error {
+      margin-top: 2em;
+      color: #600;  
+    }  
+  }
+   
   #typewriter {
-    width: 600px;
+    width: 90vw; 
+    max-width: 600px;
     filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.30));
-    font-family: Courier New, Liberation Mono, monospace;
 
     #paper-container {
       position: relative;
@@ -40,6 +80,7 @@ body.page-6bmk {
       resize: none;
       box-sizing: border-box;
       white-space: pre-wrap;
+      font-family: "Courier New", "Liberation Mono", monospace;
 
       @media @small {
         font-size: 12px;
@@ -48,6 +89,12 @@ body.page-6bmk {
 
     svg {
       overflow: visible;
+
+      .key {
+        @media (hover: hover) and (pointer: fine) {
+          cursor: pointer;
+        }
+      }
     }
 
     &.animating  {
@@ -63,14 +110,6 @@ body.page-6bmk {
       #input {
         caret-color: transparent;
       }
-    }
-
-    @media @small {
-      width: 400px;
-    }
-
-    @media @smaller {
-      width: 300px;
     }
   }
 }

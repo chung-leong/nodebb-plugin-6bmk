@@ -18,12 +18,6 @@ body {
   height: 100%;
 }
 
-#page-entry {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
 #message-container {
   flex: 1 1 0;
   display: flex;

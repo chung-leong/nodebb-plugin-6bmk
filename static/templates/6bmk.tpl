@@ -1,4 +1,10 @@
 <div id="screen">
+	<div id="message-container">
+		<div id="login-message" class="message button">[[6bmk:login]]</div>
+		<div id="sign-up-message" class="message button">[[6bmk:sign-up]]</div>
+		<div id="extra-lines-message" class="message">[[6bmk:extra-lines]]</div>
+		<div id="broken-message" class="message">[[6bmk:broken]]</div>
+	</div>
 	<div id="typewriter">
 		<div id="paper-container">
 			<div id="input" contentEditable="true" spellcheck="false"></div>
@@ -862,6 +868,9 @@
 				</g>
 				<path style="fill:#444b54;fill-opacity:.01415094" id="hammer" d="M1819.853-5.496h109.808V96.015h-109.808z"/>
 			</svg>      
-		</div> 
+		</div>
 	</div> 
+	<div id="error-container">
+		<div id="error"></div>
+	</div>
 </div>
