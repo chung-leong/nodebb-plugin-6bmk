@@ -37,7 +37,7 @@ define('/6bmk', function () {
 			const { id } = group;
 			if (id && id.startsWith('key-')) {
 				const name = id.substring(4).replace(/\-/g, '');
-				const key = { group, down: false };
+				const key = { group, name, down: false };
 				keys[name] = key;
 				group.classList.add('key');
 			}
@@ -93,6 +93,7 @@ define('/6bmk', function () {
 			} else {
 				alignInput();
 			}
+			return range;
 		}
 	
 		function getRange(element) {
@@ -111,10 +112,15 @@ define('/6bmk', function () {
 				const range = document.createRange();
 				range.selectNodeContents(element);
 				range.collapse();
-				selection.removeAllRanges();
-				selection.addRange(range);
+				useRange(range);
 				return range;
 			}
+		}
+
+		function useRange(range) {
+			const selection = getSelection();
+			selection.removeAllRanges();
+			selection.addRange(range);
 		}
 	
 		function getRangeRect(range) {
@@ -149,6 +155,8 @@ define('/6bmk', function () {
 				element.setAttribute('transform', `translate(${svgPt.x} ${svgPt.y})`);
 			}
 		}
+
+		let cursor;
 	
 		function handleBeforeInput(evt) {
 			if (evt.inputType?.startsWith('format')) {
@@ -166,7 +174,7 @@ define('/6bmk', function () {
 	
 		function handleSelectionChange(evt) {
 			if (document.activeElement === input) {
-				reposition();
+				cursor = reposition();
 			}
 		}
 	
@@ -194,10 +202,32 @@ define('/6bmk', function () {
 			}
 			return keys[name];
 		}
+
+		function getKeyByGroup(evt) {
+			let { target } = evt;
+			while (target.tagName !== 'svg') {
+				if (target.tagName === 'g') {
+					if (target.id.startsWith('key-')) {
+						for (const key of Object.values(keys)) {
+							if (key.group === target) {
+								return key;
+							}
+						}
+					}
+					break;
+				}
+				target = target.parentNode;
+			}
+		}
 	
 		function getTravel() {
 			const { offsetWidth } = typewriter;
 			return offsetWidth / 40;
+		}
+
+		function isFunctional(key) {
+			const { cursor } = getComputedStyle(key.group);
+			return (cursor === 'pointer');
 		}
 	
 		function handleKeyDown(evt) {
@@ -215,11 +245,74 @@ define('/6bmk', function () {
 				shiftSVGElement(key.group, 0, -getTravel());
 			}
 		}
-	
-		function handleTypewriterClick(evt) {
-			input.focus();
+
+		let pressedKey = null;
+
+		function handleTypewriterMouseDown(evt) {
+			const key = getKeyByGroup(evt);
+			if (key && !key.down && isFunctional(key)) {
+				key.down = true;
+				shiftSVGElement(key.group, 0, getTravel());
+			} 
+			pressedKey = key;
+			document.addEventListener('mouseup', handleTypewriterMouseUp, { once: true });
 		}
-	
+
+		function handleTypewriterMouseUp(evt) {
+			input.focus();
+			if (cursor) {
+				useRange(cursor);
+			}
+			const key = pressedKey;
+			if (key && key.down) {
+				key.down = false;
+				shiftSVGElement(key.group, 0, -getTravel());
+				
+				let cmd = 'insertText', arg, m;
+				switch (key.name) {
+					case 'backspace':
+						if (cursor && (!cursor.collapsed || cursor.startOffset >= 0)) {
+							cmd = 'delete';
+							if (cursor.collapsed) {
+								cursor.setStart(cursor.startContainer, cursor.startOffset - 1);
+							}
+						} else {
+							cmd = '';
+						}
+						break;
+					case 'shiftleft':
+					case 'shiftright':
+						cmd = '';
+						break;
+					case 'space':
+						arg = ' ';
+						break;
+					case 'period':
+						arg = '.';
+						break;
+					case 'comma':
+						arg = ',';
+						break;
+					case 'semicolon':
+						arg = ';';
+						break;
+					case 'slash':
+						arg = '/';
+						break;
+					case 'enter':
+						arg = '\n';
+						break;
+					default:
+						arg = key.name.slice(-1);
+						break;
+				}
+				if (cmd) {						
+					document.execCommand(cmd, false, arg);
+				}
+			}
+			pressedKey = null;
+		}
+		
 		const observer = new ResizeObserver(() => reposition(false));
 		observer.observe(typewriter);
 	
@@ -228,7 +321,7 @@ define('/6bmk', function () {
 		input.addEventListener('paste', handlePaste);
 		input.addEventListener('drop', handleDrop);
 		input.addEventListener('keydown', handleKeyDown);
-		svgContainer.addEventListener('click', handleTypewriterClick);
+		svgContainer.addEventListener('mousedown', handleTypewriterMouseDown);
 		document.addEventListener('keyup', handleKeyUp);
 		document.addEventListener('selectionchange', handleSelectionChange);
 		reposition(true);
