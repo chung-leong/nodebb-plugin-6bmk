@@ -10,7 +10,7 @@ define('/6bmk', function () {
 	var module = {};
 	module.init = function () {
 		const [
-			message,
+			messageContainer,
 			error,
 			typewriter,
 			svgContainer,
@@ -19,7 +19,7 @@ define('/6bmk', function () {
 			hammer,
 			roller,
 		] = [
-			'message',
+			'message-container',
 			'error',
 			'typewriter',
 			'svg-container',
@@ -156,22 +156,46 @@ define('/6bmk', function () {
 			}
 		}
 
-		let cursor;
-	
+		function showMessage(id) {
+			for (const el of messageContainer.children) {
+				if (el.id === id) {
+					el.classList.add('active');
+				} else {
+					el.classList.remove('active');
+				}
+			}
+		}
+
 		function handleBeforeInput(evt) {
 			if (evt.inputType?.startsWith('format')) {
 				evt.preventDefault();
 			}
 		}
-	
+
+		let text;
+
 		function handleInput(evt) {
 			reposition();
 			const paperRect = paper.getBoundingClientRect();
+			text = input.innerText.trim();
+			if (text.length === 0) {
+				showMessage('login-message');
+			} else {
+				const lines = text.split('\n');
+				if (lines.length <= 3) {
+					showMessage('sign-up-message');
+				} else {
+					showMessage('extra-lines-message');
+				}
+			}
 			if (evt.target.offsetHeight > paperRect.height) {
-				console.log('broken');
+				console.log(evt.target.offsetHeight + ' > ' + paperRect.height + 5);
+				showMessage('broken-message');
 			}
 		}
-	
+
+		let cursor;
+		
 		function handleSelectionChange(evt) {
 			if (document.activeElement === input) {
 				cursor = reposition();
@@ -267,7 +291,7 @@ define('/6bmk', function () {
 			if (key && key.down) {
 				key.down = false;
 				shiftSVGElement(key.group, 0, -getTravel());
-				
+
 				let cmd = 'insertText', arg, m;
 				switch (key.name) {
 					case 'backspace':
@@ -312,6 +336,16 @@ define('/6bmk', function () {
 			}
 			pressedKey = null;
 		}
+
+		function handleMessageClick(evt) {
+			const msg = messageContainer.querySelector('.active');
+			if (msg.id === 'login-message') {
+				ajaxify.go('/login');
+			} else if (msg.id === 'sign-up-message') {
+				console.log('check');
+				console.log({ text });
+			}
+		}
 		
 		const observer = new ResizeObserver(() => reposition(false));
 		observer.observe(typewriter);
@@ -324,7 +358,9 @@ define('/6bmk', function () {
 		svgContainer.addEventListener('mousedown', handleTypewriterMouseDown);
 		document.addEventListener('keyup', handleKeyUp);
 		document.addEventListener('selectionchange', handleSelectionChange);
+		messageContainer.addEventListener('click', handleMessageClick);
 		reposition(true);
+		setTimeout(() => messageContainer.classList.add('visible'), 1000);
 	};
 	return module;
 });

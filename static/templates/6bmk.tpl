@@ -1,6 +1,6 @@
 <div id="screen">
 	<div id="message-container">
-		<div id="login-message" class="message button">[[6bmk:login]]</div>
+		<div id="login-message" class="message button active">[[6bmk:login]]</div>
 		<div id="sign-up-message" class="message button">[[6bmk:sign-up]]</div>
 		<div id="extra-lines-message" class="message">[[6bmk:extra-lines]]</div>
 		<div id="broken-message" class="message">[[6bmk:broken]]</div>

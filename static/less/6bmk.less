@@ -1,5 +1,6 @@
 @small:   ~"only screen and (max-width: 640px)";
-@smaller:  ~"only screen and (max-width: 375px)";
+@smaller: ~"only screen and (max-width: 375px)";
+@mouse:   ~"only screen and (hover: hover) and (pointer: fine)";
 
 body.page-6bmk {
   #header-menu, #footer {
@@ -24,27 +25,34 @@ body.page-6bmk {
     flex-direction: column;
     justify-content: end;
     z-index: 1;
+    transition: opacity 1s linear;
+    opacity: 0;
+
+    &.visible {
+      opacity: 1;
+    }
 
     .message {
+      display: none;
       border: 1px solid #000;
       background-color: #fff;
       padding: 1em 1em 1em 1em;
       margin-bottom: 2em;
-      display: none;
+      font-weight: bold;
+      font-size: 1.4em;
 
       &.active {
         display: block;
-        transition: opacity 1s linear;
-      }
-
-      &.hidden {
-        opacity: 0;
       }
 
       &.button {
         border-radius: 0.5em;
         cursor: pointer;
       }   
+
+      @media @small {
+        font-size: inherit;
+      }
     }
   }
 
@@ -84,6 +92,11 @@ body.page-6bmk {
 
       @media @small {
         font-size: 12px;
+        line-height: 1.2;
+      }
+
+      @media @smaller {
+        font-size: 10px;
       }
     }
 
@@ -91,7 +104,7 @@ body.page-6bmk {
       overflow: visible;
 
       .key {
-        @media (hover: hover) and (pointer: fine) {
+        @media @mouse {
           cursor: pointer;
         }
       }
