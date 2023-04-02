@@ -6,74 +6,42 @@
 	It is not bundled into the min file that is served on the first load of the page.
 */
 
-define('/6bmk', function () {
+define('/6bmk', [ 'api' ], function (api) {
 	var module = {};
-	module.init = function () {
-		const [
-			messageContainer,
-			error,
-			typewriter,
-			svgContainer,
-			input,
-			paper,
-			hammer,
-			roller,
-		] = [
-			'message-container',
-			'error',
-			'typewriter',
-			'svg-container',
-			'input',
-			'paper', 
-			'hammer', 
-			'roller'
-		].map(id => document.getElementById(id));
-	
-		// find keys  
-		const keys = {};
-		const svg = typewriter.getElementsByTagName('svg')[0];
-		const groups = svg.getElementsByTagName('g');
-		for (const group of groups) {
-			const { id } = group;
-			if (id && id.startsWith('key-')) {
-				const name = id.substring(4).replace(/\-/g, '');
-				const key = { group, name, down: false };
-				keys[name] = key;
-				group.classList.add('key');
-			}
-		}
-		
+	module.init = function () {	
 		function reposition(animate) {
-			if (typewriter.classList.contains('animating')) {
+			if ($('#typewriter').hasClass('animating')) {
 				return;
 			}
 			// find cursor screen position
-			const range = getRange(input);
+			const range = getRange($('#input')[0]);
 			const rangeRect = getRangeRect(range);
 			// line up hammer position with cursor
-			const hammerRect = hammer.getBoundingClientRect();
-			const paperRect = paper.getBoundingClientRect();
-			const rangeXOffset = hammerRect.left - rangeRect.left;
-			const rangeYOffset = hammerRect.top - rangeRect.bottom;
+			const hammerPos = $('#hammer').offset();
+			const paperPos = $('#paper').offset();
+			const rangeXOffset = hammerPos.left - rangeRect.left;
+			const rangeYOffset = hammerPos.top - rangeRect.bottom;
 			// reposition paper, animate only when jumping between lines
-			const inputRect = input.getBoundingClientRect();
-			const paperYOffset = inputRect.top + rangeYOffset - paperRect.top;
+			const inputPos = $('#input').offset();
+			const paperYOffset = inputPos.top + rangeYOffset - paperPos.top;
 			const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 			const animating = animate && isChrome ? paperYOffset !== 0 : false;
-			typewriter.classList.toggle('animating', animating);
+			$('#typewriter').toggleClass('animating', animating);
 			shiftSVGElement(paper, 0, paperYOffset);
 			// reposition roller
-			const rollerRect = roller.getBoundingClientRect();
-			const paperXOffset = paperRect.left - rollerRect.left;
-			const rollerXOffset = inputRect.left + rangeXOffset - paperXOffset - rollerRect.left;
-			shiftSVGElement(roller, rollerXOffset, 0);
+			const rollerPos = $('#roller').offset();
+			const paperXOffset = paperPos.left - rollerPos.left;
+			const rollerXOffset = inputPos.left + rangeXOffset - paperXOffset - rollerPos.left;
+			shiftSVGElement($('#roller')[0], rollerXOffset, 0);
 			// align text input with paper
 			const alignInput = () => {
-				const paperRect = paper.getBoundingClientRect();
-				const rootRect = typewriter.getBoundingClientRect();
-				input.style.left = `${paperRect.left - rootRect.left}px`;
-				input.style.top = `${paperRect.top - rootRect.top}px`;
-				input.style.width = `${paperRect.width}px`;
+				const paperPos = $('#paper').offset();
+				const paperWidth = $('#paper')[0].getBoundingClientRect().width;
+				const rootPos = $('#typewriter').offset();
+				const { style } = $('#input')[0];
+				style.left = `${paperPos.left - rootPos.left}px`;
+				style.top = `${paperPos.top - rootPos.top}px`;
+				style.width = `${paperWidth}px`;
 			};
 			if (animating) {
 				// update position as transition progresses
@@ -85,11 +53,10 @@ define('/6bmk', function () {
 				const stop = () => {
 					alignInput();
 					cancelAnimationFrame(reqId);
-					typewriter.classList.remove('animating');
+					$('#typewriter').removeClass('animating');
 				};
-				const svg = paper.ownerSVGElement;
 				update();
-				svg.addEventListener('transitionend', stop, { once: true });
+				$('#svg-container').one('transitionend', stop);
 			} else {
 				alignInput();
 			}
@@ -157,13 +124,9 @@ define('/6bmk', function () {
 		}
 
 		function showMessage(id) {
-			for (const el of messageContainer.children) {
-				if (el.id === id) {
-					el.classList.add('active');
-				} else {
-					el.classList.remove('active');
-				}
-			}
+			$('#message-container .message').each(function() {
+				$(this).toggleClass('active', this.id === id);
+			});
 		}
 
 		function handleBeforeInput(evt) {
@@ -176,8 +139,7 @@ define('/6bmk', function () {
 
 		function handleInput(evt) {
 			reposition();
-			const paperRect = paper.getBoundingClientRect();
-			text = input.innerText.trim();
+			text = $('#input').prop('innerText').trim();
 			if (text.length === 0) {
 				showMessage('login-message');
 			} else {
@@ -188,7 +150,9 @@ define('/6bmk', function () {
 					showMessage('extra-lines-message');
 				}
 			}
-			if (evt.target.offsetHeight > paperRect.height) {
+			const { bottom } = $('#paper')[0].getBoundingClientRect();
+			const { top } = $('#stub')[0].getBoundingClientRect();
+			if (bottom < top) {
 				showMessage('broken-message');
 			}
 		}
@@ -219,11 +183,13 @@ define('/6bmk', function () {
 		}
 	
 		function getKey(evt) {
-			let name = evt.code.toLowerCase();
-			if (name.startsWith('key')) {
-				name = name.substr(3);
+			let id = evt.code.replace(/[A-Z0-9]/g, m => '-' + m.toLowerCase());
+			if (id.startsWith('-key')) {
+				id = id.substring(1);
+			} else {
+				id = 'key' + id;
 			}
-			return keys[name];
+			return $(`#${id}`)[0];
 		}
 
 		function getKeyByGroup(evt) {
@@ -231,11 +197,7 @@ define('/6bmk', function () {
 			while (target.tagName !== 'svg') {
 				if (target.tagName === 'g') {
 					if (target.id.startsWith('key-')) {
-						for (const key of Object.values(keys)) {
-							if (key.group === target) {
-								return key;
-							}
-						}
+						return target;
 					}
 					break;
 				}
@@ -249,7 +211,7 @@ define('/6bmk', function () {
 		}
 
 		function isFunctional(key) {
-			const { cursor } = getComputedStyle(key.group);
+			const { cursor } = getComputedStyle(key);
 			return (cursor === 'pointer');
 		}
 	
@@ -257,7 +219,7 @@ define('/6bmk', function () {
 			const key = getKey(evt);
 			if (key && !key.down) {
 				key.down = true;
-				shiftSVGElement(key.group, 0, getTravel());
+				shiftSVGElement(key, 0, getTravel());
 			}
 		}
 		
@@ -265,7 +227,7 @@ define('/6bmk', function () {
 			const key = getKey(evt);
 			if (key && key.down) {
 				key.down = false;
-				shiftSVGElement(key.group, 0, -getTravel());
+				shiftSVGElement(key, 0, -getTravel());
 			}
 		}
 
@@ -275,24 +237,24 @@ define('/6bmk', function () {
 			const key = getKeyByGroup(evt);
 			if (key && !key.down && isFunctional(key)) {
 				key.down = true;
-				shiftSVGElement(key.group, 0, getTravel());
+				shiftSVGElement(key, 0, getTravel());
 			} 
 			pressedKey = key;
-			document.addEventListener('mouseup', handleTypewriterMouseUp, { once: true });
 		}
 
-		function handleTypewriterMouseUp(evt) {
-			input.focus();
+		function handleMouseUp(evt) {
+			$('#input').focus();
 			if (cursor) {
 				useRange(cursor);
 			}
 			const key = pressedKey;
 			if (key && key.down) {
 				key.down = false;
-				shiftSVGElement(key.group, 0, -getTravel());
+				shiftSVGElement(key, 0, -getTravel());
 
 				let cmd = 'insertText', arg, m;
-				switch (key.name) {
+				const name = key.id.substring(4);
+				switch (name) {
 					case 'backspace':
 						if (cursor && (!cursor.collapsed || cursor.startOffset >= 0)) {
 							cmd = 'delete';
@@ -303,8 +265,8 @@ define('/6bmk', function () {
 							cmd = '';
 						}
 						break;
-					case 'shiftleft':
-					case 'shiftright':
+					case 'shift-left':
+					case 'shift-right':
 						cmd = '';
 						break;
 					case 'space':
@@ -326,7 +288,7 @@ define('/6bmk', function () {
 						arg = '\n';
 						break;
 					default:
-						arg = key.name.slice(-1);
+						arg = name.slice(-1);
 						break;
 				}
 				if (cmd) {						
@@ -337,40 +299,48 @@ define('/6bmk', function () {
 		}
 
 		function handleMessageClick(evt) {
-			const msg = messageContainer.querySelector('.active');
-			if (msg.id === 'login-message') {
+			const id = $('#message-container .message.active').prop('id');
+			if (id === 'login-message') {
 				ajaxify.go('/login');
-			} else if (msg.id === 'sign-up-message') {
-				require(['api'], (api) => {
-					api.post('/plugins/6bmk/validate', { text }, (err, { found, used }) => {
-						if (err) {
-							error.textContent = err.message;
+			} else if (id === 'sign-up-message') {
+				api.post('/plugins/6bmk/validate', { text }, (err, { found, used }) => {
+					if (err) {
+						$('#error').text(err.message);
+					} else {
+						if (found) {
+							ajaxify.go('/register');
 						} else {
-							if (found) {
-								ajaxify.go('/register');
-							} else {
-								showMessage(used ? 'used-message' : 'incorrect-message');
-							}
+							showMessage(used ? 'used-message' : 'incorrect-message');
 						}
-					});
+					}
 				});
 			}
 		}
 		
 		const observer = new ResizeObserver(() => reposition(false));
-		observer.observe(typewriter);
-	
-		input.addEventListener('beforeinput', handleBeforeInput);
-		input.addEventListener('input', handleInput);
-		input.addEventListener('paste', handlePaste);
-		input.addEventListener('drop', handleDrop);
-		input.addEventListener('keydown', handleKeyDown);
-		svgContainer.addEventListener('mousedown', handleTypewriterMouseDown);
-		document.addEventListener('keyup', handleKeyUp);
-		document.addEventListener('selectionchange', handleSelectionChange);
-		messageContainer.addEventListener('click', handleMessageClick);
+		observer.observe($('#typewriter')[0]);
+
+		$('#input')
+			.on('beforeinput', handleBeforeInput)
+			.on('input', handleInput)
+			.on('paste', handlePaste)
+			.on('drop', handleDrop)
+			.on('keydown', handleKeyDown);
+		$('#svg-container')
+			.on('mousedown', handleTypewriterMouseDown)
+			.find('g').each(function() {
+				if (this.id?.startsWith('key-')) {
+					$(this).addClass('key');
+				}
+			});
+		$(document)
+			.on('keyup', handleKeyUp)
+			.on('mouseup', handleMouseUp)
+			.on('selectionchange', handleSelectionChange);
+		$('#message-container')
+			.on('click', handleMessageClick);
 		reposition(true);
-		setTimeout(() => messageContainer.classList.add('visible'), 1000);
+		setTimeout(() => $('#message-container').addClass('visible'), 1000);
 	};
 	return module;
 });

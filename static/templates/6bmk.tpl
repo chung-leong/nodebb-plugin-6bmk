@@ -2,10 +2,10 @@
 	<div id="message-container">
 		<div id="login-message" class="message button active">[[6bmk:login]]</div>
 		<div id="sign-up-message" class="message button">[[6bmk:sign-up]]</div>
-		<div id="extra-lines-message" class="message">[[6bmk:extra-lines]]</div>
-		<div id="broken-message" class="message">[[6bmk:broken]]</div>
-		<div id="incorrect-message" class="message">[[6bmk:incorrect]]</div>
-		<div id="used-message" class="message">[[6bmk:used]]</div>
+		<div id="extra-lines-message" class="message warning">[[6bmk:extra-lines]]</div>
+		<div id="broken-message" class="message error">[[6bmk:broken]]</div>
+		<div id="incorrect-message" class="message error">[[6bmk:incorrect]]</div>
+		<div id="used-message" class="message error">[[6bmk:used]]</div>
 	</div>
 	<div id="typewriter">
 		<div id="paper-container">
@@ -393,7 +393,7 @@
 					<path style="fill:url(#u)" transform="translate(-481 -1401.264)" d="M3860 1565H813v360h3047z"/>
 					<path d="M465 74.736c1 184 2 368 4 540h2781v-540z" style="fill:url(#v)"/>
 					<path d="M465 74.736c1 184 2 368 4 540h2781v-540z" style="fill:url(#w)"/>
-					<path d="M465-.236c1 209.546 2 419.092 4 614.972h2781V-.236Z" style="fill:url(#x);stroke-width:1.06716001"/>
+					<path d="M465-.236c1 209.546 2 419.092 4 614.972h2781V-.236Z" id="stub" style="fill:url(#x);stroke-width:1.06716001"/>
 					<path style="fill:url(#y)" transform="translate(-481 -1401.264)" d="M4098 1617h-287v98h287z"/>
 					<path style="fill:url(#z)" transform="translate(-481 -1401.264)" d="M4098 1617h-287v98h287z"/>
 					<path d="M343 57.736c5-2 11-3 16-4 32-15 60-39-67-39-189 0-180 159-180 159l72 2s13-100 96-115c15-3 38-3 64-3z" style="fill:url(#A)"/>
