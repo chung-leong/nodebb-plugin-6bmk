@@ -189,7 +189,6 @@ define('/6bmk', function () {
 				}
 			}
 			if (evt.target.offsetHeight > paperRect.height) {
-				console.log(evt.target.offsetHeight + ' > ' + paperRect.height + 5);
 				showMessage('broken-message');
 			}
 		}
@@ -342,8 +341,19 @@ define('/6bmk', function () {
 			if (msg.id === 'login-message') {
 				ajaxify.go('/login');
 			} else if (msg.id === 'sign-up-message') {
-				console.log('check');
-				console.log({ text });
+				require(['api'], (api) => {
+					api.post('/plugins/6bmk/validate', { text }, (err, { found, used }) => {
+						if (err) {
+							error.textContent = err.message;
+						} else {
+							if (found) {
+								ajaxify.go('/register');
+							} else {
+								showMessage(used ? 'used-message' : 'incorrect-message');
+							}
+						}
+					});
+				});
 			}
 		}
 		

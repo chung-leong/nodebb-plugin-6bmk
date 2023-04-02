@@ -4,6 +4,8 @@
 		<div id="sign-up-message" class="message button">[[6bmk:sign-up]]</div>
 		<div id="extra-lines-message" class="message">[[6bmk:extra-lines]]</div>
 		<div id="broken-message" class="message">[[6bmk:broken]]</div>
+		<div id="incorrect-message" class="message">[[6bmk:incorrect]]</div>
+		<div id="used-message" class="message">[[6bmk:used]]</div>
 	</div>
 	<div id="typewriter">
 		<div id="paper-container">

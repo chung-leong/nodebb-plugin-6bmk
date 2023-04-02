@@ -18,14 +18,19 @@ const plugin = {};
 plugin.init = async ({ router }) => {
 	// Settings saved in the plugin settings can be retrieved via settings methods
 	const { setting1, setting2 } = await meta.settings.get('6bmk');
-
 	router.use((req, res, next) => {
 		try {
 			const parsedUrl = url.parse(req.url, true);
 			const { pathname } = parsedUrl;
 			const routes = n => [ n, `/api${n}` ];
 			const match = n => pathname === n || pathname.startsWith(`${n}/`);
-			const ignoring = [ '/assets', '/admin', ...routes('/login'), ...routes('/reset') ];
+			const ignoring = [ 
+				'/assets', 
+				'/admin', 
+				'/api/v3',
+				...routes('/login'),
+				...routes('/reset') 
+			];
 			if (!ignoring.some(match)) {
 				let allowing = false;
 				if (req.user) {
@@ -44,6 +49,7 @@ plugin.init = async ({ router }) => {
 					} else {
 						req.url = '/6bmk';
 					}	
+					console.log(`Redirecting to ${req.url}`);
 				}
 			}	
 			next();
@@ -62,11 +68,12 @@ plugin.addRoutes = async ({ router, middleware }) => {
 		(async () => {
 			const { text } = req.body;
 			const haiku = await findHaiku(text);
-			const found = !haiku;
+			const found = !!haiku;
 			if (haiku) {
 				req.session.validatedHaikuId = haiku.hid;
 			}
-			controllerHelpers.formatApiResponse(found ? 200 : 404, res, { found });
+			const used = false;
+			controllerHelpers.formatApiResponse(200, res, { found, used });
 		})();
 	});
 
