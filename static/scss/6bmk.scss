@@ -1,6 +1,6 @@
-@small:   ~"only screen and (max-width: 640px)";
-@smaller: ~"only screen and (max-width: 375px)";
-@mouse:   ~"only screen and (hover: hover) and (pointer: fine)";
+$small:   "only screen and (max-width: 640px)";
+$smaller: "only screen and (max-width: 375px)";
+$mouse:   "only screen and (hover: hover) and (pointer: fine)";
 
 body.page-6bmk {
   #header-menu, #footer {
@@ -50,7 +50,7 @@ body.page-6bmk {
         cursor: pointer;
       }   
 
-      @media @small {
+      @media ($small) {
         font-size: inherit;
       }
     }
@@ -90,12 +90,12 @@ body.page-6bmk {
       white-space: pre-wrap;
       font-family: "Courier New", "Liberation Mono", monospace;
 
-      @media @small {
+      @media ($small) {
         font-size: 12px;
         line-height: 1.2;
       }
 
-      @media @smaller {
+      @media ($smaller) {
         font-size: 10px;
       }
     }
@@ -104,7 +104,7 @@ body.page-6bmk {
       overflow: visible;
 
       .key {
-        @media @mouse {
+        @media ($mouse) {
           cursor: pointer;
         }
       }

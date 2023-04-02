@@ -12,8 +12,8 @@
 	"staticDirs": {
 		"static": "./static"
 	},
-	"less": [
-		"static/less/6bmk.less"
+	"scss": [
+		"static/scss/6bmk.scss"
 	],
 	"modules": {
 		"../client/6bmk.js": "./static/lib/6bmk.js",
