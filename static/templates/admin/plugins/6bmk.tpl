@@ -1,64 +1,66 @@
 <form role="form" class="6bmk-settings">
 	<div class="row mb-4">
-		<div class="col-sm-2 col-12 settings-header">General</div>
+		<div class="col-sm-2 col-12 settings-header">[[6bmk:flyer-options]]</div>
 		<div class="col-sm-10 col-12">
-			<p class="lead">
-				Adjust these settings. You can then retrieve these settings in code via:
-				<code>meta.settings.get('6bmk', function(err, settings) {...});</code>
-			</p>
 			<div class="mb-3">
-				<label class="form-label" for="setting1">Setting 1</label>
-				<input type="text" id="setting1" name="setting1" title="Setting 1" class="form-control" placeholder="Setting 1">
+				<label class="form-label" for="orientation">[[6bmk:layout]]</label>
+				<select id="orientation" name="orientation" title="[[6bmk:layout]]" class="form-control">
+					<option value="portrait">[[6bmk:portrait]]</option>
+					<option value="landscape">[[6bmk:landscape]]</option>
+				</select>
 			</div>
 			<div class="mb-3">
-				<label class="form-label" for="setting2">Setting 2</label>
-				<input type="text" id="setting2" name="setting2" title="Setting 2" class="form-control" placeholder="Setting 2">
+				<label class="form-label" for="paper">[[6bmk:paper-size]]</label>
+				<select id="paper" name="paper" title="[[6bmk:paper-size]]" class="form-control">
+					<option value="letter">US Letter</option>
+					<option value="a4">A4</option>
+				</select>
 			</div>
-
-			<div class="form-check">
-				<input type="checkbox" class="form-check-input" id="setting3" name="setting3">
-				<label for="setting3" class="form-check-label">Setting 3</label>
+			<div class="mb-3">
+				<label class="form-label" for="locale">[[6bmk:haiku-language]]</label>
+				<select id="locale" name="locale" title="[[6bmk:haiku-language]]" class="form-control">
+					<option value="en-US">[[6bmk:english-us]]</option>
+					<option value="en-GB">[[6bmk:english-gb]]</option>
+					<option value="en-CA">[[6bmk:english-ca]]</option>
+					<option value="en-AU">[[6bmk:english-au]]</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="mode">[[6bmk:haiku-location]]</label>
+				<select id="mode" name="mode" title="[[6bmk:haiku-location]]" class="form-control">
+					<option value="simplex">[[6bmk:front-simplex]]</option>
+					<option value="duplex">[[6bmk:back-duplex]]</option>
+				</select>
+			</div>
+			<div class="mb-3">
+				<label class="form-label" for="instructions">[[6bmk:instructions]]</label>
+				<input type="text" id="instructions" name="instructions" title="[[6bmk:instructions]]" class="form-control" placeholder="[[6bmk:instructions]]">
 			</div>
 		</div>
 	</div>
 
 	<div class="row mb-4">
-		<div class="col-sm-2 col-12 settings-header">Colors</div>
+		<div class="col-sm-2 col-12 settings-header">[[6bmk:new-flyer]]</div>
 		<div class="col-sm-10 col-12">
-			<p class="alert" id="preview">
-				Here is some preview text. Use the inputs below to modify this alert's appearance.
-			</p>
-			<div class="mb-3">
-				<label class="form-label" for="color">Foreground</label>
-				<input data-settings="colorpicker" type="color" id="color" name="color" title="Background Color" class="form-control" placeholder="#ffffff" value="#ffffff" />
-			</div>
-			<div class="mb-3">
-				<label class="form-label" for="bgColor">Background</label>
-				<input data-settings="colorpicker" type="color" id="bgColor" name="bgColor" title="Background Color" class="form-control" placeholder="#000000" value="#000000" />
-			</div>
+				<button type="button" id="download" class="btn btn-primary">[[6bmk:download]]</button>
+			</form>
 		</div>
 	</div>
-
+{{{ if flyers.length }}}
 	<div class="row mb-4">
-		<div class="col-sm-2 col-12 settings-header">Sorted List</div>
+		<div class="col-sm-2 col-12 settings-header">[[6bmk:existing-flyers]]</div>
 		<div class="col-sm-10 col-12">
-			<div class="mb-3" data-type="sorted-list" data-sorted-list="sample-list" data-item-template="admin/plugins/6bmk/partials/sorted-list/item" data-form-template="admin/plugins/6bmk/partials/sorted-list/form">
-				<ul data-type="list" class="list-group mb-2"></ul>
-				<button type="button" data-type="add" class="btn btn-info">Add Item</button>
-			</div>
+		<ul class="list-group list-group-flush">
+			{{{ each flyers }}}
+			<!-- IMPORT admin/plugins/6bmk/partials/flyer-list/item.tpl -->			
+			{{{ end }}}
+		</ul>
 		</div>
 	</div>
-
-	<div class="row">
-		<div class="col-sm-2 col-12 settings-header">Uploads</div>
-		<div class="col-sm-10 col-12">
-			<label class="form-label" for="uploadedImage">Upload Image</label>
-			<div class="input-group">
-				<input id="uploadedImage" name="uploadedImage" type="text" class="form-control" />
-				<input value="Upload" data-action="upload" data-target="uploadedImage" type="button" class="btn btn-default" />
-			</div>
-		</div>
-	</div>
+{{{ end }}}
+</form>
+<form id="download-form" method="post" action="{config.relative_path}/api/v3/plugins/6bmk/flyers/">
+	<input type="hidden" name="csrf_token" value="{config.csrf_token}">
 </form>
 
 <!-- IMPORT admin/partials/save_button.tpl -->

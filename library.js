@@ -8,17 +8,18 @@ const controllerHelpers = require.main.require('./src/controllers/helpers');
 const routeHelpers = require.main.require('./src/routes/helpers');
 const {
 	createFlyer,
-	getFlyers,
 	getFlyerStream,
 	findHaiku,
+	findUsedHaiku,
 } = require('./lib/helpers');
 
 const plugin = {};
 
 plugin.init = async ({ router }) => {
 	// Settings saved in the plugin settings can be retrieved via settings methods
-	const { setting1, setting2 } = await meta.settings.get('6bmk');
-	router.use((req, res, next) => {
+	//const settings = await meta.settings.get('6bmk');
+	// TODO: default settings
+	router.use(async (req, res, next) => {
 		try {
 			const parsedUrl = url.parse(req.url, true);
 			const { pathname } = parsedUrl;
@@ -51,7 +52,7 @@ plugin.init = async ({ router }) => {
 					}	
 					console.log(`Redirecting to ${req.url}`);
 				}
-			}	
+			}
 			next();
 		} catch (err) {
 			next(err);
@@ -64,33 +65,37 @@ plugin.init = async ({ router }) => {
 };
 
 plugin.addRoutes = async ({ router, middleware }) => {
-	routeHelpers.setupApiRoute(router, 'post', '/6bmk/validate', [], (req, res, next) => {
-		(async () => {
-			const { text } = req.body;
-			const haiku = await findHaiku(text);
-			const found = !!haiku;
-			if (haiku) {
-				req.session.validatedHaikuId = haiku.hid;
-			}
-			const used = false;
-			controllerHelpers.formatApiResponse(200, res, { found, used });
-		})();
+	// client-side API
+	routeHelpers.setupApiRoute(router, 'post', '/6bmk/validate', [], async (req, res) => {
+		const { text } = req.body;
+		const haiku = await findHaiku(text);
+		const found = !!haiku;
+		if (haiku) {
+			req.session.validatedHaikuId = haiku.hid;
+		}
+		const used = await findUsedHaiku(text);
+		controllerHelpers.formatApiResponse(200, res, { found, used });
 	});
 
+	// admin API
 	const middlewares = [
 		middleware.ensureLoggedIn,
 		middleware.admin.checkPrivileges,
 	];
-	routeHelpers.setupApiRoute(router, 'get', '/6bmk/flyers/pptx/:id', middlewares, (req, res) => {
-		(async () => {
-			const { id } = req.params;
-			const stream = await getFlyerStream(id);
-			res.set({ 
-				'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-				'Content-Disposition': `attachment; filename="${stream.name}.pptx"`,
-			});
-			stream.pipe(res);	
-		})();
+	routeHelpers.setupApiRoute(router, 'post', '/6bmk/flyers/', middlewares, async (req, res) => {
+		const { paper, orientation, mode, locale, instructions } = await meta.settings.get('6bmk');
+		const id = await createFlyer({ paper, orientation, mode, locale, instructions });
+		res.redirect(req.originalUrl + `pptx/${id}`);
+	});
+	routeHelpers.setupApiRoute(router, 'get', '/6bmk/flyers/pptx/:id', middlewares, async (req, res) => {
+		const { id } = req.params;
+		const stream = await getFlyerStream(id);
+		const name = `flyer-${id}`;
+		res.set({ 
+			'Content-Type': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+			'Content-Disposition': `attachment; filename="${name}.pptx"`,
+		});
+		stream.pipe(res);	
 	});
 };
 
