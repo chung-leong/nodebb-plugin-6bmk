@@ -5,6 +5,7 @@ const meta = require.main.require('./src/meta');
 const routeHelpers = require.main.require('./src/routes/helpers');
 const controllers = require('./lib/controllers');
 const api = require('./lib/api');
+const { useHaiku } = require('./lib/helpers');
 
 module.exports = {
 	init,
@@ -35,6 +36,7 @@ async function init({ router }) {
 					allowing = true;
 				} else if (routes('/register').some(match)) {
 					if (req.session.validatedHaikuId) {
+						// allow user to go to registration page after a haiku has been entered
 						allowing = true;
 					}
 				}
@@ -44,7 +46,12 @@ async function init({ router }) {
 					} else {
 						req.url = '/6bmk';
 					}	
-					console.log(`Redirecting to ${req.url}`);
+				}	
+			} else if (req.session.validatedHaikuId) {
+				if (!req.session.registration) {
+					// registration is done--this haiku is no longer usable
+					await useHaiku(req.session.validatedHaikuId, req.user.uid);
+					delete req.session.validatedHaikuId;
 				}
 			}
 			next();
