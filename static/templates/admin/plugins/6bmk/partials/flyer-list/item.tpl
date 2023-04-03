@@ -5,5 +5,7 @@
     [[6bmk:flyer]] {../fid}
   </span>
   <span>{../date}</span>
-  <span class="badge bg-info rounded-pill">{../used}/{../total}</span>
+  <span class="badge bg-info rounded-pill" title="[[6bmk:haiku-number]]">
+    {../used}/{../total}
+  </span>
 </li>
