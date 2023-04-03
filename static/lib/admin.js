@@ -8,17 +8,31 @@ define('admin/plugins/6bmk', [
  ], function (settings, api, benchpress, translator) {
 	var ACP = {};
 
+	let savedValues
 	ACP.init = function () {
-		settings.load('6bmk', $('.6bmk-settings'));
+		console.log(settings);
+		settings.load('6bmk', $('.6bmk-settings'), () => {
+			savedValues = $('.6bmk-settings').serializeObject();
+		});
 		$('#save').on('click', saveSettings);
 		$('#download').on('click', startDownload);
 	};
 
 	function saveSettings() {
-		settings.save('6bmk', $('.6bmk-settings'));
+		settings.save('6bmk', $('.6bmk-settings'), () => {
+			savedValues = $('.6bmk-settings').serializeObject();
+		});
 	}
 
 	function startDownload() {
+		const values = $('.6bmk-settings').serializeObject();
+		if (JSON.stringify(values) !== JSON.stringify(savedValues)) {
+			translator.translate('[[6bmk:save-before-download]]', (message) => {
+				bootbox.alert(message);
+			});
+			return;
+		}
+
 		$('#download-form').submit();
 		let attempt = 0;
 		const update = (delay) => {
