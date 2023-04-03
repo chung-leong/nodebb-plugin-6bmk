@@ -303,10 +303,11 @@ define('/6bmk', [ 'api' ], function (api) {
 			if (id === 'login-message') {
 				ajaxify.go('/login');
 			} else if (id === 'sign-up-message') {
-				api.post('/plugins/6bmk/validate', { text }, (err, { found, used }) => {
+				api.post('/plugins/6bmk/validate', { text }, (err, result) => {
 					if (err) {
 						$('#error').text(err.message);
 					} else {
+						const { found, used } = result;
 						if (found) {
 							ajaxify.go('/register');
 						} else {
