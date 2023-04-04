@@ -222,7 +222,7 @@ define('/6bmk', [ 'api' ], function (api) {
 	
 		function handleKeyDown(evt) {
 			const key = getKey(evt);
-			if (key && !key.down) {
+			if (key && !key.down && !evt.metaKey) {
 				key.down = true;
 				shiftSVGElement(key, 0, getTravel());
 			}
