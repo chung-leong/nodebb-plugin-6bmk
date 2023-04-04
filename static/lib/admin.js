@@ -10,7 +10,6 @@ define('admin/plugins/6bmk', [
 
 	let savedValues
 	ACP.init = function () {
-		console.log(settings);
 		settings.load('6bmk', $('.6bmk-settings'), () => {
 			savedValues = $('.6bmk-settings').serializeObject();
 		});
