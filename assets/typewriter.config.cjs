@@ -11,7 +11,7 @@ module.exports = {
       params: {
         overrides: {
           cleanupIDs: {
-            preserve: [ 'roller', 'hammer', 'paper', 'stub' ],
+            preserve: [ 'roller', 'hammer', 'paper', 'stub', 'machine-body' ],
             preservePrefixes: [ 'key-' ],
           },
           removeXMLProcInst: false,

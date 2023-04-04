@@ -36,9 +36,8 @@ body.page-6bmk {
       display: none;
       border: 1px solid #000;
       background-color: #fff;
-      padding: 1em 1em 1em 1em;
-      margin-bottom: 2em;
-      margin-top: 0.5em;
+      padding: 0.5em 0.75em 0.5em 0.75em;
+      margin: 0.5em 0.5em 1.5em 0.5em;
       font-weight: bold;
       font-size: 1.4em;
 
@@ -80,7 +79,6 @@ body.page-6bmk {
   #typewriter {
     width: 90vw; 
     max-width: 600px;
-    filter: drop-shadow(5px -5px 10px rgba(0, 0, 0, 0.30));
 
     #paper-container {
       position: relative;
