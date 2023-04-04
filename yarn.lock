@@ -326,10 +326,10 @@
   "resolved" "https://registry.npmjs.org/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz"
   "version" "2.4.1"
 
-"6bmk@^0.0.8":
-  "integrity" "sha512-PXW4dw0VL4yoIma7vweQf090UE4sVub6Tw1dVD/XgSAUnozyg85Fk/Arx1VWfHSKtoRqqyfYV8sCydq4dNrQBA=="
-  "resolved" "https://registry.npmjs.org/6bmk/-/6bmk-0.0.8.tgz"
-  "version" "0.0.8"
+"6bmk@^0.0.9":
+  "integrity" "sha512-eO+Es/ZiHyFJ/ExSVGR4FWwbXuw5LEkS1o/twxg+yF9ST+EBwrfPe1795DuVcTSzniYlipaf3kxGF1yOjMe1Cg=="
+  "resolved" "https://registry.npmjs.org/6bmk/-/6bmk-0.0.9.tgz"
+  "version" "0.0.9"
 
 "acorn-jsx@^5.3.2":
   "integrity" "sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ=="

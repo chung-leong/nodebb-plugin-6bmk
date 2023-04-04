@@ -1,6 +1,6 @@
 {
   "name": "nodebb-plugin-6bmk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NodeBB plugin for creating hyperlocal discussion forums",
   "main": "library.js",
   "repository": {
@@ -52,6 +52,6 @@
     "lint-staged": "13.2.0"
   },
   "dependencies": {
-    "6bmk": "^0.0.8"
+    "6bmk": "^0.0.9"
   }
 }
