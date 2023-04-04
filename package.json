@@ -1,7 +1,7 @@
 {
   "name": "nodebb-plugin-6bmk",
-  "version": "0.4.3",
-  "description": "A starter kit for quickly creating NodeBB plugins",
+  "version": "0.1.0",
+  "description": "NodeBB plugin for creating hyperlocal discussion forums",
   "main": "library.js",
   "repository": {
     "type": "git",
@@ -10,8 +10,7 @@
   "keywords": [
     "nodebb",
     "plugin",
-    "6bmk",
-    "shell"
+    "6bmk"
   ],
   "husky": {
     "hooks": {
@@ -25,10 +24,20 @@
       "git add"
     ]
   },
+  "files": [
+    "languages/",
+    "lib/",
+    "static/",
+    "library.js",
+    "plugin.json",
+    "!static/lib/.eslintrc"
+  ],
+  "author": "Chung Leong",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/chung-leong/nodebb-plugin-6bmk/issues"
   },
+  "homepage": "https://github.com/chung-leong/nodebb-plugin-6bmk#readme",
   "readmeFilename": "README.md",
   "nbbpm": {
     "compatibility": "^3.0.0"
