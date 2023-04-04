@@ -24,5 +24,6 @@
   "existing-flyers": "Existing flyers",
   "flyer": "Flyer",
   "haiku-number": "Number of haiku (used/total)",
-  "save-before-download": "Save the changes you have made before downloading"
+  "save-before-download": "Save the changes you have made before downloading",
+  "default-instructions": "Take a tab, go to the web address and type in the monkey haiku"
 }

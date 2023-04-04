@@ -24,5 +24,6 @@
   "existing-flyers": "Istniejące ulotki",
   "flyer": "Ulotka",
   "haiku-number": "Liczba haiku (wykorzystane/łącznie)",
-  "save-before-download": "Zapisz zmiany wprowadzone przed pobraniem"
+  "save-before-download": "Zapisz zmiany wprowadzone przed pobraniem",
+  "default-instructions": "Weź pasek, przejdź do adresu internetowego i wpisz małpie haiku"
 }

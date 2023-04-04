@@ -2,6 +2,7 @@
 
 const url = require('url');
 const meta = require.main.require('./src/meta');
+const translator = require.main.require('./src/translator');
 const routeHelpers = require.main.require('./src/routes/helpers');
 const controllers = require('./lib/controllers');
 const api = require('./lib/api');
@@ -14,8 +15,15 @@ module.exports = {
 };
 
 async function init({ router }) {
-	const settings = await meta.settings.get('6bmk');
-	// TODO: default settings
+	// default settings
+	const { defaultLang } = meta.config;
+	await meta.settings.setOnEmpty('6bmk', {
+		paper: (defaultLang === 'en-US') ? 'letter' : 'a4',
+		orientation: 'portrait', 
+		mode: 'simplex', 
+		locale: [ 'en-US', 'en-CA', 'en-GB', 'en-AU' ].includes(defaultLang) ? defaultLang : 'en-GB', 
+		instructions: await new Promise(r => translator.translate('[[6bmk:default-instructions]]', r)),
+	});
 
 	// redirect unregistered user to 6bmk entry page
 	router.use(async (req, res, next) => {

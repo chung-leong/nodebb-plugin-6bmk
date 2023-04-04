@@ -24,5 +24,6 @@
   "existing-flyers": "Existujúce letáky",
   "flyer": "Leták",
   "haiku-number": "Počet haiku (použité/celkom)",
-  "save-before-download": "Uložte zmeny, ktoré ste vykonali pred stiahnutím"
+  "save-before-download": "Uložte zmeny, ktoré ste vykonali pred stiahnutím",
+  "default-instructions": "Vezmi si prúžok, prejdi na webovú adresu a napíš opičie haiku"
 }
