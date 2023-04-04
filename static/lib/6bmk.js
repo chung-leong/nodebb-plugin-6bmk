@@ -14,34 +14,33 @@ define('/6bmk', [ 'api' ], function (api) {
 				return;
 			}
 			// find cursor screen position
-			const range = getRange($('#input')[0]);
+			const range = getRange('#input');
 			const rangeRect = getRangeRect(range);
 			// line up hammer position with cursor
-			const hammerPos = $('#hammer').offset();
-			const paperPos = $('#paper').offset();
+			const hammerPos = getRect('#hammer');
+			const paperPos = getRect('#paper');
 			const rangeXOffset = hammerPos.left - rangeRect.left;
 			const rangeYOffset = hammerPos.top - rangeRect.bottom;
 			// reposition paper, animate only when jumping between lines
-			const inputPos = $('#input').offset();
+			const inputPos = getRect('#input');
 			const paperYOffset = inputPos.top + rangeYOffset - paperPos.top;
 			const isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
 			const animating = animate && isChrome ? paperYOffset !== 0 : false;
 			$('#typewriter').toggleClass('animating', animating);
-			shiftSVGElement(paper, 0, paperYOffset);
+			shiftSVGElement('#paper', 0, paperYOffset);
 			// reposition roller
-			const rollerPos = $('#roller').offset();
+			const rollerPos = getRect('#roller');
 			const paperXOffset = paperPos.left - rollerPos.left;
 			const rollerXOffset = inputPos.left + rangeXOffset - paperXOffset - rollerPos.left;
-			shiftSVGElement($('#roller')[0], rollerXOffset, 0);
+			shiftSVGElement('#roller', rollerXOffset, 0);
 			// align text input with paper
 			const alignInput = () => {
-				const paperPos = $('#paper').offset();
-				const paperWidth = $('#paper')[0].getBoundingClientRect().width;
-				const rootPos = $('#typewriter').offset();
+				const paperPos = getRect('#paper');
+				const rootPos = getRect('#typewriter');
 				const { style } = $('#input')[0];
 				style.left = `${paperPos.left - rootPos.left}px`;
 				style.top = `${paperPos.top - rootPos.top}px`;
-				style.width = `${paperWidth}px`;
+				style.width = `${paperPos.width}px`;
 			};
 			if (animating) {
 				// update position as transition progresses
@@ -63,7 +62,8 @@ define('/6bmk', [ 'api' ], function (api) {
 			return range;
 		}
 	
-		function getRange(element) {
+		function getRange(selector) {
+			const element = $(selector)[0];
 			const selection = getSelection();
 			try {
 				const range = selection.getRangeAt(0);
@@ -104,8 +104,14 @@ define('/6bmk', [ 'api' ], function (api) {
 				return range.getBoundingClientRect();
 			}
 		} 
+
+		function getRect(selector) {
+			const element = $(selector)[0];
+			return element.getBoundingClientRect();
+		}
 	
-		function shiftSVGElement(element, clientX, clientY) {
+		function shiftSVGElement(selector, clientX, clientY) {
+			const element = $(selector)[0];
 			const svg = element.ownerSVGElement;
 			const ctm = element.getScreenCTM();
 			const ctmi = ctm.inverse();
@@ -150,8 +156,8 @@ define('/6bmk', [ 'api' ], function (api) {
 					showMessage('extra-lines-message');
 				}
 			}
-			const { bottom } = $('#paper')[0].getBoundingClientRect();
-			const { top } = $('#stub')[0].getBoundingClientRect();
+			const { bottom } = getRect('#paper');
+			const { top } = getRect('#stub');
 			if (bottom < top) {
 				showMessage('broken-message');
 			}
