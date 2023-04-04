@@ -205,7 +205,6 @@ define('/6bmk', [ 'api' ], function (api) {
 					if (target.id.startsWith('key-')) {
 						return target;
 					}
-					break;
 				}
 				target = target.parentNode;
 			}
