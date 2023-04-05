@@ -1,0 +1,37 @@
+version: '3.5'
+
+services:
+  nodebb_sitename:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    expose:
+      - 4567
+    volumes:
+      - sitename_build:/usr/src/app/build
+      - sitename_config:/usr/src/app/config
+  mongo:
+    image: mongo:bionic
+    restart: unless-stopped
+    expose:
+      - 27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+    volumes:
+      - mongo:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+
+volumes:
+  mongo:
+  sitename_build:
+  sitename_config:
