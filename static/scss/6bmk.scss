@@ -3,8 +3,8 @@ $smaller: "max-width: 375px";
 $mouse:   "pointer: fine";
 
 body.page-6bmk {
-  #header-menu, #footer {
-    display: none;
+  #header-menu, #footer, nav.sidebar {
+    display: none !important;
   }
 
   #screen {
