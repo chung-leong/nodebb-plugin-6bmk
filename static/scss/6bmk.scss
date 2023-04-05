@@ -25,7 +25,7 @@ body.page-6bmk {
     flex-direction: column;
     justify-content: end;
     z-index: 1;
-    transition: opacity 1s linear;
+    transition: opacity 1s;
     opacity: 0;
 
     &.visible {
@@ -48,7 +48,15 @@ body.page-6bmk {
 
       &.button {
         border-radius: 0.5em;
+        transition: background-color 0.5s, border-color 0.5s, color 0.5s;
         cursor: pointer;
+
+        &.busy {
+          background-color: #eee;
+          border-color: #666;
+          color: #666;
+          cursor: wait;
+        }
       }
       
       &.warning {
@@ -72,7 +80,7 @@ body.page-6bmk {
 
     #error {
       max-width: 70vw;
-      margin-top: 1.5em 0.5em 0.5em 0.5em;
+      margin: 1.5em 0.5em 0.5em 0.5em;
       color: #600;  
     }  
   }

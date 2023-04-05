@@ -304,13 +304,23 @@ define('/6bmk', [ 'api' ], function (api) {
 		}
 
 		function handleMessageClick(evt) {
+			if ($('.message').hasClass('busy')) {
+				return;
+			}
 			const id = $('#message-container .message.active').prop('id');
 			if (id === 'login-message') {
 				ajaxify.go('/login');
 			} else if (id === 'sign-up-message') {
+				$('.message').addClass('busy');
+				$('#error').text('');
 				api.post('/plugins/6bmk/validate', { text }, (err, result) => {
+					$('.message').removeClass('busy');
 					if (err) {
-						$('#error').text(err.message);
+						let { message } = err;
+						if (message === 'error') {
+							message = 'Unable to connect with server';
+						}
+						$('#error').text(message);
 					} else {
 						const { found, used } = result;
 						if (found) {
