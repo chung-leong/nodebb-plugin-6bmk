@@ -1,11 +1,5 @@
 'use strict';
 
-/*
-	This file is located in the "modules" block of plugin.json
-	It is only loaded when the user navigates to /6bmk page
-	It is not bundled into the min file that is served on the first load of the page.
-*/
-
 define('/6bmk', [ 'api' ], function (api) {
 	var module = {};
 	module.init = function () {	
@@ -92,7 +86,6 @@ define('/6bmk', [ 'api' ], function (api) {
 	
 		function getRangeRect(range) {
 			if (range.collapsed) {
-				// TODO: problematic when there's a newline at the end
 				const clone = range.cloneRange();
 				const zwj = document.createTextNode('\u200d');
 				clone.insertNode(zwj);
@@ -143,7 +136,7 @@ define('/6bmk', [ 'api' ], function (api) {
 
 		let text;
 
-		function handleInput(evt) {
+		function handleInput() {
 			reposition();
 			text = $('#input').prop('innerText').trim();
 			if (text.length === 0) {
@@ -165,8 +158,8 @@ define('/6bmk', [ 'api' ], function (api) {
 
 		let cursor;
 		
-		function handleSelectionChange(evt) {
-			if (document.activeElement === input) {
+		function handleSelectionChange() {
+			if (document.activeElement === $('#input')[0]) {
 				cursor = reposition();
 			}
 		}
@@ -349,12 +342,18 @@ define('/6bmk', [ 'api' ], function (api) {
 					$(this).addClass('key');
 				}
 			});
-		$(document)
+		$('#screen')
 			.on('keyup', handleKeyUp)
 			.on('mouseup', handleMouseUp)
-			.on('selectionchange', handleSelectionChange);
 		$('#message-container')
 			.on('click', handleMessageClick);
+		$(document)
+			.on('selectionchange', handleSelectionChange);
+		$(window)
+			.one('action:ajaxify.cleanup', () => {
+				$(document).off('selectionchange', handleSelectionChange);
+				observer.disconnect();
+			})
 		reposition(true);
 		setTimeout(() => $('#message-container').addClass('visible'), 1000);
 	};
