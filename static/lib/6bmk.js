@@ -129,7 +129,7 @@ define('/6bmk', [ 'api' ], function (api) {
 		}
 
 		function handleBeforeInput(evt) {
-			if (evt.inputType?.startsWith('format')) {
+			if (evt.inputType && evt.inputType.startsWith('format')) {
 				evt.preventDefault();
 			}
 		}
@@ -338,7 +338,7 @@ define('/6bmk', [ 'api' ], function (api) {
 		$('#svg-container')
 			.on('mousedown', handleTypewriterMouseDown)
 			.find('g').each(function() {
-				if (this.id?.startsWith('key-')) {
+				if (this.id && this.id.startsWith('key-')) {
 					$(this).addClass('key');
 				}
 			});

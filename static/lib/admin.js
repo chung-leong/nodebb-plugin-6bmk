@@ -43,7 +43,7 @@ define('admin/plugins/6bmk', [
 							$('#flyer-list').html(html);	
 						});
 						const { flyers } = result;
-						if (flyers[0]?.total === 0 && attempt <= 2) {
+						if (flyers[0] && flyers[0].total === 0 && attempt <= 2) {
 							// haiku count hasn't been updated yet
 							update(5000);
 							attempt++;
