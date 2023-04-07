@@ -148,9 +148,45 @@ define('/6bmk', [ 'api' ], function (api) {
 			}
 		}
 
-		let text;
+		let emulateKeyPress = false, emulatedKey;
+		let text = '';
 
 		function handleInput() {
+			const newText = $('#input').prop('innerText').trim();
+			if (emulateKeyPress) {
+				let name;
+				if (newText.length < text.length) {
+					name = 'backspace';
+				} else {
+					const { startContainer, startOffset } = getRange('#input');
+					if (startOffset > 0) {
+						const c = startContainer.nodeValue.substring(startOffset - 1, startOffset);
+						name = ({ 
+							';': 'semicolon', 
+							'.': 'period', 
+							',': 'comma', 
+							'/': 'slash',
+							' ': 'space',
+						})[c];
+						if (!name && /\w/.test(c)) {
+							name = /[0-9]/.test(c) ? 'digit-' + c : c.toLowerCase();
+						}
+					} else {
+						name = 'enter';
+					}
+				}
+				emulatedKey = name ? $(`#key-${name}`)[0] : undefined;
+				setTimeout(() => {
+					if (emulatedKey && !emulatedKey.down) {
+						emulatedKey.down = true;
+						shiftSVGElement(emulatedKey, 0, getTravel());
+						setTimeout(() => {
+							emulatedKey.down = false;
+							shiftSVGElement(emulatedKey, 0, -getTravel());
+						}, 250);
+					}
+				}, 10);
+			}
 			reposition();
 			text = $('#input').prop('innerText').trim();
 			if (text.length === 0) {
@@ -182,15 +218,22 @@ define('/6bmk', [ 'api' ], function (api) {
 			copyPlainText(evt.clipboardData);
 			evt.preventDefault();
 			evt.stopPropagation();
+			emulateKeyPress = false
 		}
 		
 		function handleDrop(evt) {
 			copyPlainText(evt.dataTransfer);
 			evt.preventDefault();
 			evt.stopPropagation();
+			emulateKeyPress = false
 		}
 	
-		function getKey(evt) {
+		function getKey(evt) {			
+			if (!evt.code) {
+				// for Android				
+				emulateKeyPress = true;
+				return;
+			}
 			let id = evt.code.replace(/[A-Z0-9]/g, m => '-' + m.toLowerCase());
 			if (id.startsWith('-key')) {
 				id = id.substring(1);
