@@ -1,5 +1,4 @@
-$small:   "max-width: 640px";
-$smaller: "max-width: 375px";
+$narrow:   "max-width: 640px";
 $mouse:   "pointer: fine";
 
 body.page-6bmk {
@@ -67,7 +66,7 @@ body.page-6bmk {
         background-color: #f99;
       }
 
-      @media ($small) {
+      @media ($narrow) {
         font-size: inherit;
       }
     }
@@ -108,12 +107,8 @@ body.page-6bmk {
       font-family: "Courier New", "Liberation Mono", monospace;
       line-height: 1.2;
 
-      @media ($small) {
-        font-size: 12px;
-      }
-
-      @media ($smaller) {
-        font-size: 10px;
+      @media ($narrow) {
+        font-size: 3.5vw;
       }
     }
 

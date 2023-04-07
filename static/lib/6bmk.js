@@ -22,6 +22,7 @@ define('/6bmk', [ 'api' ], function (api) {
 			const animating = animate && isChrome ? paperYOffset !== 0 : false;
 			$('#typewriter').toggleClass('animating', animating);
 			shiftSVGElement('#paper', 0, paperYOffset);
+			stretchSVGElement('#paper', inputPos.height);
 			// reposition roller
 			const rollerPos = getRect('#roller');
 			const paperXOffset = paperPos.left - rollerPos.left;
@@ -122,6 +123,19 @@ define('/6bmk', [ 'api' ], function (api) {
 			}
 		}
 
+		function stretchSVGElement(selector, clientHeight) {
+			const element = $(selector)[0];
+			const [ transform ] = element.transform.baseVal;		
+			const before = element.getBoundingClientRect();
+			if (before.height !== clientHeight) {
+				const yScaleBefore = transform.matrix.d;
+				const yScale = Math.max(1, clientHeight / before.height * yScaleBefore);
+				transform.matrix.d = yScale;
+				const after = element.getBoundingClientRect();
+				shiftSVGElement(element, 0, before.y - after.y);
+			}
+		}
+
 		function showMessage(id) {
 			$('#message-container .message').each(function() {
 				$(this).toggleClass('active', this.id === id);
@@ -148,11 +162,6 @@ define('/6bmk', [ 'api' ], function (api) {
 				} else {
 					showMessage('extra-lines-message');
 				}
-			}
-			const { bottom } = getRect('#paper');
-			const { top } = getRect('#stub');
-			if (bottom < top) {
-				showMessage('broken-message');
 			}
 		}
 

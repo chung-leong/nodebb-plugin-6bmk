@@ -3,7 +3,6 @@
 		<div id="login-message" class="message button active">[[6bmk:login]]</div>
 		<div id="sign-up-message" class="message button">[[6bmk:sign-up]]</div>
 		<div id="extra-lines-message" class="message warning">[[6bmk:extra-lines]]</div>
-		<div id="broken-message" class="message error">[[6bmk:broken]]</div>
 		<div id="incorrect-message" class="message error">[[6bmk:incorrect]]</div>
 		<div id="used-message" class="message error">[[6bmk:used]]</div>
 	</div>
