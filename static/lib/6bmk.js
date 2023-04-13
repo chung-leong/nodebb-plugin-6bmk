@@ -123,6 +123,15 @@ define('/6bmk', [ 'api' ], function (api) {
 			}
 		}
 
+		function unshiftSVGElement(selector) {
+			const element = $(selector)[0];
+			const [ transform ] = element.transform.baseVal;
+			if (transform) {
+				transform.matrix.e = 0;
+				transform.matrix.f = 0;
+			}
+		}
+
 		function stretchSVGElement(selector, clientHeight) {
 			const element = $(selector)[0];
 			const [ transform ] = element.transform.baseVal;		
@@ -148,7 +157,7 @@ define('/6bmk', [ 'api' ], function (api) {
 			}
 		}
 
-		let emulateKeyPress = false, emulatedKey;
+		let emulateKeyPress = false;
 		let text = '';
 
 		function handleInput() {
@@ -175,14 +184,16 @@ define('/6bmk', [ 'api' ], function (api) {
 						name = 'enter';
 					}
 				}
-				emulatedKey = name ? $(`#key-${name}`)[0] : undefined;
+				const key = name ? $(`#key-${name}`)[0] : undefined;
 				setTimeout(() => {
-					if (emulatedKey && !emulatedKey.down) {
-						emulatedKey.down = true;
-						shiftSVGElement(emulatedKey, 0, getTravel());
+					if (key && !key.down) {
+						key.down = true;
+						shiftSVGElement(key, 0, getTravel());
 						setTimeout(() => {
-							emulatedKey.down = false;
-							shiftSVGElement(emulatedKey, 0, -getTravel());
+							if (key.down) {
+								key.down = false;
+								unshiftSVGElement(key);
+							}
 						}, 250);
 					}
 				}, 10);
@@ -277,7 +288,7 @@ define('/6bmk', [ 'api' ], function (api) {
 			const key = getKey(evt);
 			if (key && key.down) {
 				key.down = false;
-				shiftSVGElement(key, 0, -getTravel());
+				unshiftSVGElement(key);
 			}
 		}
 
@@ -305,7 +316,7 @@ define('/6bmk', [ 'api' ], function (api) {
 			const key = pressedKey;
 			if (key && key.down) {
 				key.down = false;
-				shiftSVGElement(key, 0, -getTravel());
+				unshiftSVGElement(key);
 
 				let cmd = 'insertText', arg, m;
 				const name = key.id.substring(4);
