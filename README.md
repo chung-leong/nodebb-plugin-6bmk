@@ -29,7 +29,7 @@ using SSH and begin configuring it. If you're a Windows user and aren't
 familiar with Linux, follow this 
 [tutorial](https://docs.digitalocean.com/products/droplets/how-to/connect-with-ssh/putty/).
 
-### Setting up Web Server
+### Setting up web server
 
 Installing Nginx, the most popular web server software currently, is easy 
 enough. Simply enter the following command into the command prompt and press
@@ -39,14 +39,14 @@ ENTER:
 apt-get install nginx
 ```
 
-Run the following command to start the server automatically:
+Run the following command to start the server:
 
 ```sh
-systemctl enable nginx
+systemctl start nginx
 ```
 
 At this point you should be able to see a generic page when you visit 
-**http://**[your domain name] using your web browser. Note that the web address must 
+`http://[your domain name]` using your web browser. Note that the web address must 
 start with "http" and not "https" as SSL is not enabled yet.
 
 To enable SSL (Secure Sockets Layer) protection, you will need to install 
@@ -97,7 +97,8 @@ command to restrict access to the token:
 chmod 600 ~/certbot-creds.ini
 ```
 
-Once 
+With the credentials in place, run the following command, replacing first the domain name 
+with your own:
 
 ```sh
 certbot certonly \
@@ -107,10 +108,60 @@ certbot certonly \
 ```
 
 If you run into problems, please consult the 
-[original Digital Ocean article](https://www.digitalocean.com/community/tutorials/how-to-create-let-s-encrypt-wildcard-certificates-with-certbot), from which the above
+[original Digital Ocean article](https://www.digitalocean.com/community/tutorials/how-to-create-let-s-encrypt-wildcard-certificates-with-certbot) from which the above
 information was taken.
 
-### Setting up Database 
+Otherwise you should have a working certifcate at this point. Certbot will 
+automatically renew it prior to its expiration date. Now we need to configure 
+Nginx to use the certifcate. Run the follow command to open a new config file:
+
+```sh
+nano /etc/nginx/conf.d/certbot
+```
+
+Paste in the following text and replace the domain name with your own:
+
+```sh
+ssl_certificate /etc/letsencrypt/live/workaholic.ninja/fullchain.pem;
+ssl_certificate_key /etc/letsencrypt/live/workaholic.ninja/privkey.pem;
+```
+
+Press Ctrl-O to save and Ctrl-X to exit, then open the config file for the default 
+site:
+
+```sh
+nano /etc/nginx/sites-available/default
+```
+
+Scroll down and uncomment the following lines:
+
+```nginx
+        # SSL configuration
+        #
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+```
+
+Press Ctrl-O to save and Ctrl-X to exit. Restart Nginx with the following command:
+
+```sh
+systemctl restart nginx
+```
+
+At this point your should be able to reach `https://[your domain name]`. 
+A visit to `https://test.[your domain name]` should yield the same page.
+
+Run the following command so Nginx will launch automatically on system startup:
+
+```sh
+systemctl enable nginx
+```
+
+### Setting up database server
+
+The process of installing MongoDB is slightly more involved as it's not available 
+in Ubuntu's software repository. We need to obtain it from mongodb.org instead. 
+We'll first add the signing key for MongoDB version 6:
 
 ```sh
 apt-key adv \
@@ -118,22 +169,71 @@ apt-key adv \
   --recv 39BD841E4BE5FB195A65400E6A26B1AE64C3C388
 ```
 
+Then we add the repository of mongodb.org to our system:
+
 ```sh
 echo "deb [ arch=amd64,arm64 signed=/usr/share/keyrings/mongodb-server-6.0.gpg ] \
   https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | \
   sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
 ```
 
-```sh
-apt-get update
-```
+Update the list of software and install the suite:
 
 ```sh
+apt-get update
 apt-get install -y mongodb-org
 ```
 
+Before firing up the database, we'll increase the system's maximum map count 
+so we don't receive a warning:
+
 ```sh
 echo "vm.max_map_count=128000" >> /etc/sysctl.conf
+sysctl -p
+```
+
+Run the following command to start MongoDB:
+
+```sh
+systemctl start mongod
+```
+
+Start the Mongo shell so we can add the root user:
+
+```sh
+mongosh
+```
+
+Run the following:
+
+```js
+use admin
+db.createUser({ 
+  user: "admin", 
+  pwd: "<Enter a secure password>", 
+  roles: [ 
+    { role: "root", db: "admin" } 
+  ] 
+})
+```
+
+Type `exit` to exit the shell. Use nano to add the following lines to `/etc/mongod.conf`:
+
+```
+security:
+  authorization: enabled
+```
+
+Then restart MongoDB:
+
+```sh
+systemctl restart mongod
+```
+
+Run the following command so MongoDB will launch automatically on system startup:
+
+```sh
+systemctl enable mongod
 ```
 
 ### Setting up NodeBB
@@ -163,3 +263,207 @@ npm install \
 ```sh
 useradd node -m
 ```
+
+### Adding a board
+
+Our server is designed to host multiple instances of NodeBB. To add a board, we need the following:
+
+* Database
+* Copy of NodeBB
+* NodeBB systemd service file
+* Nginx virtual server config file
+
+Suppose we wish to create a board that will appear at `https://skinny.workaholic.ninja`. To create
+the first item on the list, we enter the Mongo shell by running the following:
+
+```sh
+mongosh -u root -p <Enter a secure password>
+```
+
+For simplicity sake we'll name both the database and the database user "skinny". We run the 
+following code to create the database user:
+
+```js
+use skinny
+db.createUser({ 
+  user: "skinny", 
+  pwd: "<password>", 
+  roles: [ 
+   { role: "readWrite", db: "skinny" }, 
+   { role: "clusterMonitor", db: "admin" } 
+  ] 
+})
+```
+
+To create a copy of NodeBB, we could simply copy all the files from `/usr/src/nodebb`. That would 
+be a rather wasteful approach, however. We'll instead use 
+[OverlayFS](https://www.educative.io/answers/what-is-overlayfs) to create a "shadow copy". 
+
+We will first create a directory that holds everything related to this board:
+
+```sh
+mkdir /home/node/skinny
+```
+
+Then we create the three directories needed by OverlayFS: the upper overlay (which holds changes), 
+the work directory, and the actual mount point:
+
+```sh
+cd /home/node/skinny
+mkdir .diff .work nodebb && chown -R node:node .
+```
+
+Using nano, we add the following line to `/etc/fstab`:
+
+```
+overlay /home/node/skinny/nodebb overlay noauto,x-systemd.automount,lowerdir=/usr/src/nodebb,upperdir=/home/node/skinny/.diff,workdir=/home/node/skinny/.work 0 0
+```
+
+We then tell the system to reload its configuration:
+
+```sh
+systemctl daemon-reload
+```
+
+We're then ready to mount the overlay file system:
+
+```sh
+mount /home/node/skinny/nodebb
+```
+
+At this point `/home/node/skinny/nodebb` will contain everything in `/usr/src/nodebb` 
+although no physical copying of the files had actually occurred. We're now ready to start the 
+NodeBB setup process:
+
+```sh
+cd ./nodebb
+./nodebb setup
+```
+
+The setup script will ask you a series of questions:
+
+```
+URL used to access this NodeBB (http://localhost:4567) https://skinny.workaholic.ninja
+Please enter a NodeBB secret (563f0b22-638e-47f4-8b0f-ee8478c736ce) 
+Would you like to submit anonymous plugin usage to nbbpm? (yes) 
+Which database to use (mongo) 
+Now configuring mongo database:
+MongoDB connection URI: (leave blank if you wish to specify host, port, username/password and database individually)
+Format: mongodb://[username:password@]host1[:port1][,host2[:port2],...[,hostN[:portN]]][/[database][?options]] 
+Host IP or address of your MongoDB instance (127.0.0.1) 
+Host port of your MongoDB instance (27017) 
+MongoDB username skinny
+Password of your MongoDB database ********
+MongoDB database name (nodebb) skinny
+```
+
+If the install script manages to connect to the database server, it'll create the necessary 
+database structure, then ask you to provide login information for the admin user:
+
+```
+Administrator username ninja-sysop
+Administrator email address somedude1234@gmail.com
+Password ********
+Confirm Password ********
+```
+
+Once that's done, NodeBB will proceed to build the web-accessible files (mainly JavaScript). The 
+process will take a minute or so.
+
+If the board is not the first one, you would need to open `nodebb/config.json` and manually assign  a different port number to it:
+
+```json
+{
+    "url": "https://chunky.workaholic.ninja",
+    "secret": "433f0b22-538e-37f4-1b0f-ae8478c736ce",
+    "database": "mongo",
+    "mongo": {
+        "host": "127.0.0.1",
+        "port": "27017",
+        "username": "chunky",
+        "password": "password",
+        "database": "chunky",
+        "uri": ""
+    },
+    "port": 4568
+}
+```
+
+Okay, NodeBB is ready to go. The next item on our list is the systemd service file, used to start 
+this instance of NodeBB automatically. We open `/home/node/skinny/nodebb.service` and 
+insert the following content:
+
+```ini
+[Unit]
+Description=NodeBB (skinny.workaholic.ninja)
+Documentation=https://docs.nodebb.org
+After=system.slice multi-user.target mongod.service
+
+[Service]
+Type=forking
+User=node
+
+WorkingDirectory=/home/node/skinny/nodebb
+PIDFile=/home/node/skinny/nodebb/pidfile
+ExecStart=/usr/bin/env node loader.js
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+We then place a symbolic link to the file in systemd's config directory:
+
+```sh
+ln -s /home/node/skinny/nodebb.service /etc/systemd/system/nodebb.skinny.service
+```
+
+We should now be able to start the service:
+
+```sh
+systemctl start nodebb.skinny
+```
+
+We can check if the NodeBB is working by running the following:
+
+```sh
+wget -qO- http://localhost:4567
+```
+
+It should retrieve an HTML file.
+
+If everything looks okay, we tell systemd to autostart the service:
+
+```sh
+systemctl enable nodebb.skinny
+```
+
+We're almost there! Now we just need to tell Nginx to relay NodeBB's output to 
+the Internet. We open `/home/node/skinny/nginx.conf` and insert the following 
+content:
+
+```nginx
+server {
+  listen 80;
+  listen 443 ssl http2;
+  server_name skinny.workaholic.ninja;
+
+  location / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-NginX-Proxy true;
+
+    proxy_pass http://localhost:4567;
+    proxy_redirect off;
+
+    # Socket.IO Support
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+  }
+}
+```
+
+Be sure to adjust the port number if the default (4567) is not being used.
