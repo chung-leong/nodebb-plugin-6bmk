@@ -142,7 +142,45 @@ Scroll down and uncomment the following lines:
         listen [::]:443 ssl default_server;
 ```
 
-Press Ctrl-O to save and Ctrl-X to exit. Restart Nginx with the following command:
+Press Ctrl-O to save and Ctrl-X to exit, then open Nginx's main config file:
+
+```sh
+nano /etc/nginx/nginx.conf
+```
+
+Scroll down and add `client_max_body_size 10m` to enlarge the file upload size:
+
+```nginx
+        ##
+        # Basic Settings
+        ##
+
+        sendfile on;
+        tcp_nopush on;
+        types_hash_max_size 2048;
+        client_max_body_size 10m;
+```
+
+Without the change mobile users will not be able to post photos taken using 
+their phones (which are usually hi-res).
+
+Scroll down further and uncomment the line with the `gzip_types` directive:
+
+```nginx
+        gzip on;
+
+        # gzip_vary on;
+        # gzip_proxied any;
+        # gzip_comp_level 6;
+        # gzip_buffers 16 8k;
+        # gzip_http_version 1.1;
+        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+```
+
+This tells Nginx to employ compression on JavaScript and CSS files, significantly 
+reducing the time required for the web site to load.
+
+Restart Nginx with the following command:
 
 ```sh
 systemctl restart nginx
@@ -238,40 +276,65 @@ systemctl enable mongod
 
 ### Setting up NodeBB
 
+The first thing we need to do is install Node.js:
+
 ```sh
 apt-get install nodejs npm
 ```
 
-```sh
-git clone \
-  --depth 1 \
-  --branch v3.0.0-rc.2 \
-  https://github.com/NodeBB/NodeBB.git \
-  /usr/src/nodebb
-```
-
-```sh
-npm install --omit=dev
-```
-
-```sh
-npm install \
-  nodebb-plugin-6bmk \
-  nodebb-plugin-emailer-sendgrid
-```
+Then we create the user that Node will run under (running Node as root is a definite no-no):
 
 ```sh
 useradd node -m
 ```
 
+Then the directory that will hold the NodeBB codebase:
+
+```sh
+mkdir -p /usr/src/nodebb && chown node:node /usr/src/nodebb 
+```
+
+We need to transfer ownership to the Node user because NodeBB will modify its own codebase. 
+It needs to have full write access.
+
+We use Git to download the source code, running as `node` to ensure that the account owns 
+all the files:
+
+```sh
+cd /usr/src/nodebb
+sudo -u node git clone \
+  --depth 1 \
+  --branch v3.0.0-rc.2 \
+  https://github.com/NodeBB/NodeBB.git \
+  .
+```
+
+Next we install the dependent modules used by NodeBB:
+
+```sh
+sudo -u node npm install --omit=dev
+```
+
+This step can be quite time-consuming. When it finishes, we proceed to install the 
+6bmk plugin and the sendgrid plugin:
+
+```sh
+sudo -u node npm install \
+  nodebb-plugin-6bmk \
+  nodebb-plugin-emailer-sendgrid
+```
+
+Sendgrid is a commercial e-mailing service that offers a free tier for low-volume usage
+scenarios. We'll use it so our site can send password-reset e-mails.
+
 ### Adding a board
 
 Our server is designed to host multiple instances of NodeBB. To add a board, we need the following:
 
-* Database
-* Copy of NodeBB
-* NodeBB systemd service file
-* Nginx virtual server config file
+1. Database for the board
+2. Copy of NodeBB
+3. NodeBB systemd service file
+4. Nginx virtual server config file
 
 Suppose we wish to create a board that will appear at `https://skinny.workaholic.ninja`. To create
 the first item on the list, we enter the Mongo shell by running the following:
@@ -297,15 +360,16 @@ db.createUser({
 
 To create a copy of NodeBB, we could simply copy all the files from `/usr/src/nodebb`. That would 
 be a rather wasteful approach, however. We'll instead use 
-[OverlayFS](https://www.educative.io/answers/what-is-overlayfs) to create a "shadow copy". 
+[OverlayFS](https://www.educative.io/answers/what-is-overlayfs) to create a "shadow copy" of the 
+NodeBB codebase. 
 
-We will first create a directory that holds everything related to this board:
+We will first create a directory that holds everything related to this particular board:
 
 ```sh
 mkdir /home/node/skinny
 ```
 
-Then we create the three directories needed by OverlayFS: the upper overlay (which holds changes), 
+Then we create the three directories needed by OverlayFS: the upper overlay (holding changes), 
 the work directory, and the actual mount point:
 
 ```sh
@@ -337,7 +401,7 @@ NodeBB setup process:
 
 ```sh
 cd ./nodebb
-./nodebb setup
+sudo -u node ./nodebb setup
 ```
 
 The setup script will ask you a series of questions:
@@ -367,7 +431,7 @@ Password ********
 Confirm Password ********
 ```
 
-Once that's done, NodeBB will proceed to build the web-accessible files (mainly JavaScript). The 
+Once that's done, NodeBB will proceed to build the web-sites (mainly JavaScript files). The 
 process will take a minute or so.
 
 If the board is not the first one, you would need to open `nodebb/config.json` and manually assign  a different port number to it:
@@ -467,3 +531,19 @@ server {
 ```
 
 Be sure to adjust the port number if the default (4567) is not being used.
+
+Now we just need to symlink this file to Nginx's config directory:
+
+```sh
+ln -s /home/node/skinny/nginx.conf /etc/nginx/sites-enabled/skinny.workaholic.ninja
+```
+
+Then tell Nginx to reload it configuration:
+
+```sh
+systemctl reload nginx
+```
+
+NodeBB should be fully functional at the proper web address at this point.
+
+### Configuring the board
