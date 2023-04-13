@@ -38,9 +38,9 @@ define('admin/plugins/6bmk', [
 			setTimeout(() => {
 				api.get('/plugins/6bmk/flyers/', {}, async (err, result) => {
 					if (!err) {
-						const html = await benchpress.render('admin/plugins/6bmk/partials/flyer-list/list', result);
+						const html = await benchpress.render('admin/plugins/6bmk/partials/flyer-list/section', result);
 						translator.translate(html, (html) => {
-							$('#flyer-list').html(html);	
+							$('#existing-flyers').html(html);	
 						});
 						const { flyers } = result;
 						if (flyers[0] && flyers[0].total === 0 && attempt <= 2) {

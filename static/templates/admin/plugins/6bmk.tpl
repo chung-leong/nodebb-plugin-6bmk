@@ -46,16 +46,9 @@
 			</form>
 		</div>
 	</div>
-{{{ if flyers.length }}}
-	<div class="row mb-4">
-		<div class="col-sm-2 col-12 settings-header">[[6bmk:existing-flyers]]</div>
-		<div class="col-sm-10 col-12">
-		<ul id="flyer-list" class="list-group list-group-flush">
-			<!-- IMPORT admin/plugins/6bmk/partials/flyer-list/list.tpl -->			
-		</ul>
-		</div>
+	<div class="row mb-4" id="existing-flyers">
+	  <!-- IMPORT admin/plugins/6bmk/partials/flyer-list/section.tpl -->			
 	</div>
-{{{ end }}}
 </form>
 <form id="download-form" method="post" action="{config.relative_path}/api/v3/plugins/6bmk/flyers/">
 	<input type="hidden" name="csrf_token" value="{config.csrf_token}">
