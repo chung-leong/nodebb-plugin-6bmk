@@ -292,11 +292,16 @@ define('/6bmk', [ 'api' ], function (api) {
 			pressedKey = key;
 		}
 
-		function handleMouseUp(evt) {
-			$('#input').focus();
-			if (cursor) {
-				useRange(cursor);
+		function handleTypewriterMouseUp() {
+			if (document.activeElement !== $('#input')[0]) {
+				$('#input').focus();
+				if (cursor) {
+					useRange(cursor);
+				}
 			}
+		}
+
+		function handleMouseUp(evt) {
 			const key = pressedKey;
 			if (key && key.down) {
 				key.down = false;
@@ -389,6 +394,7 @@ define('/6bmk', [ 'api' ], function (api) {
 			.on('keydown', handleKeyDown);
 		$('#svg-container')
 			.on('mousedown', handleTypewriterMouseDown)
+			.on('mouseup', handleTypewriterMouseUp)
 			.find('g').each(function() {
 				if (this.id && this.id.startsWith('key-')) {
 					$(this).addClass('key');
