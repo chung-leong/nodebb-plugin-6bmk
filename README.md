@@ -116,7 +116,7 @@ automatically renew it prior to its expiration date. Now we need to configure
 Nginx to use the certifcate. Run the follow command to open a new config file:
 
 ```sh
-nano /etc/nginx/conf.d/certbot
+nano /etc/nginx/conf.d/certbot.conf
 ```
 
 Paste in the following text and replace the domain name with your own:
@@ -133,7 +133,19 @@ site:
 nano /etc/nginx/sites-available/default
 ```
 
-Scroll down and uncomment the following lines:
+Scroll down and add a new server section:
+
+```nginx
+server {
+        listen 80 default_server;
+	      listen [::]:80 default_server;
+	      server_name _;
+	      return 301 https://$host$request_uri;
+}
+```
+
+Remove the two lines concerning port 80 from the existing section and 
+uncomment the following lines:
 
 ```nginx
         # SSL configuration
@@ -183,7 +195,7 @@ reducing the time required for the web site to load.
 Restart Nginx with the following command:
 
 ```sh
-systemctl restart nginx
+systemctl reload nginx
 ```
 
 At this point your should be able to reach `https://[your domain name]`. 
@@ -312,6 +324,7 @@ sudo -u node git clone \
 Next we install the dependent modules used by NodeBB:
 
 ```sh
+sudo -u node cp ./install/package.json 
 sudo -u node npm install --omit=dev
 ```
 
@@ -340,7 +353,7 @@ Suppose we wish to create a board that will appear at `https://skinny.workaholic
 the first item on the list, we enter the Mongo shell by running the following:
 
 ```sh
-mongosh -u root -p <Enter a secure password>
+mongosh -u admin -p '<Enter a secure password>'
 ```
 
 For simplicity sake we'll name both the database and the database user "skinny". We run the 
@@ -508,7 +521,6 @@ content:
 
 ```nginx
 server {
-  listen 80;
   listen 443 ssl http2;
   server_name skinny.workaholic.ninja;
 
@@ -547,3 +559,35 @@ systemctl reload nginx
 NodeBB should be fully functional at the proper web address at this point.
 
 ### Configuring the board
+
+The first thing we want to do is ensure that messages posted on the board don't 
+end up appearing all over the Internet. The 6bmk plugin, when active, will block 
+all not-logged-in users from viewing anything. In the event the plugin suffers a 
+malfunction, we want NodeBB to still not expose contents entrusted to us by our 
+users. 
+
+In the top menu, click on `Manage` then `Privileges`. Uncheck all checkboses for
+`guests` and `spiders`. If you plan on keeping the default categories created by 
+NodeBB, you'll need to remove guest privileges from those as well. 
+
+Once activated, the 6bmk plugin will automatically remove guest privileges from 
+newly created categories.
+
+After you have done that, go to `Settings` > `Web Crawler`. Enter and save the 
+following as the site's `robots.txt`:
+
+```
+User-agent: *
+Disallow: /
+```
+
+Next, go to `Settings` > `Languages` and set the language of the board. You 
+will need to reload the page for the changes to take affect.
+
+It's then time to activate the 6bmk plugin. Go to `Plugins` > `Install Plugins`.
+Click on the `Installed` tab. You should see `nodebb-plugin-6bmk` listed near 
+the top of the list. Click the `Activate` button to activate it. A pop-up message 
+will appear informing you the need to rebuild and restart the system. Click on it 
+to start the process.
+
+
