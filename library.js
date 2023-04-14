@@ -12,6 +12,7 @@ module.exports = {
 	init,
 	addRoutes,
 	addAdminNavigation,
+	removeGuestPrivileges,
 };
 
 async function init({ router }) {
@@ -93,4 +94,9 @@ function addAdminNavigation(header) {
 		name: '6bmk',
 	});
 	return header;
+}
+
+async function removeGuestPrivileges({ category, data, defaultPrivileges, modPrivileges, guestPrivileges }) {
+	guestPrivileges = [];
+	return { category, data, defaultPrivileges, modPrivileges, guestPrivileges };
 }
